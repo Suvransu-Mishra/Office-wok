@@ -1,0 +1,887 @@
+﻿@using MVP_DashBoard.Models
+@model DateModel
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    .position-sticky {
+        position: sticky;
+        top: 0;
+    }
+    :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #e67e22;
+        --text-color: #333;
+        --background-color: #f8f9fa;
+    }
+
+    body {
+        font-family: 'Roboto', sans-serif;
+        color: var(--text-color);
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    .main {
+        width: 130%;
+        overflow-x: hidden;
+        padding-top: 50px;
+        padding-bottom: 50px;
+    }
+
+    .container-fluid {
+        padding-left: 30px;
+        padding-right: 30px;
+    }
+
+    .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+
+    .collapse {
+        display: none;
+    }
+    .collapse.show {display: table-row-group;
+        }
+</style>
+<div class="main" id="home">
+    <div class="container-fluid text-left pt-2 mt-2 pb-2 mb-2">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="list-group position-sticky" style="top: 20px;">
+                        <a href="#home" class="list-group-item list-group-item-action">Home</a>
+                        <a href="#milkpro" class="list-group-item list-group-item-action">Milk Procurement</a>
+                        <a href="#graph2" class="list-group-item list-group-item-action">Next Graph</a>
+                        <a href="#graph3" class="list-group-item list-group-item-action">Usske baad wala graph</a>
+                        <a href="#graph4" class="list-group-item list-group-item-action">Sabse Last wala graph</a>
+                        <a href="#pie" class="list-group-item list-group-item-action">Sales</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div id="content">
+                    <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview">
+                        <div class="row">
+                            <div class="card">
+                                <div class="statistics-details d-flex align-items-center justify-content-around">
+                                    <div>
+                                        <p class="statistics-title">Total Procurement</p>
+                                        <h3 class="rate-percentage font-weight-bold">102974 Ltrs</h3>
+                                        <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>-0.5%</span></p>
+                                    </div>
+                                    <div>
+                                        <p class="statistics-title">Procurement</p>
+                                        <h3 class="rate-percentage">7,682</h3>
+                                        <p class="text-success d-flex"><i class="mdi mdi-menu-up"></i><span>+0.1%</span></p>
+                                    </div>
+                                    <div>
+                                        <p class="statistics-title">Total Sales</p>
+                                        <h3 class="rate-percentage">Rs 30133947</h3>
+                                        <p class="text-danger d-flex"><i class="mdi mdi-menu-up"></i><span>68.8</span></p>
+                                    </div>
+                                    <div class="d-none d-md-block">
+                                        <p class="statistics-title">Dispatch/Sales</p>
+                                        <h3 class="rate-percentage">8%</h3>
+                                        <p class="text-success d-flex"><i class="mdi mdi-menu-down"></i><span>+0.8%</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>  
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between;">
+                            <form method="post" asp-controller="Dashboard" asp-action="Index">
+                                <div class="mb-3" >
+                                    <label asp-for="Date" class="form-label">Please Input Date</label>
+                                    <input asp-for="Date" class="form-control" id="Date" style="width: 200px;" type="date" value="@Model.Date.ToString("yyyy-MM-dd")" />
+                                    <span asp-validation-for="Date" class="text-danger"></span>
+                                </div>
+                                <div style="margin-right: 500px;">
+                                    <button type="submit" class="btn btn-primary">Show report</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="row" id="milkpro">
+                            <div class="card">
+                                <div>
+                                    <h4 class="card-title card-title-dash">Milk Procurement</h4>
+                                    <h5 class="card-subtitle card-subtitle-dash">Lorem Ipsum is simply dummy text of the printing</h5>
+                                </div>
+                                <div class="wrapper mt-4">
+                                    <canvas id="performanceLine1" style="width:100%;max-width:900px"></canvas>
+                                </div>
+                            </div>
+                            <table class="table table-bordered">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th scope="col">Receipt</th>
+                                        <th scope="col" colspan="3">FTD (For the Day)</th>
+                                        <th scope="col" colspan="3">MTD (Month to Date)</th>
+                                        <th scope="col" colspan="3">YTD (Year to Date)</th>
+                                    </tr>
+                                </thead>
+                                <thead class="thead-dark">
+                                    <tr class="collapsible" onclick="toggleVisibility('dcTableBody')">
+                                        <th scope="col">From DCs</th>
+                                        <th scope="col">Today</th>
+                                        <th scope="col">Yesterday</th>
+                                        <th scope="col">Progress</th>
+                                        <th scope="col">Feb'24</th>
+                                        <th scope="col">Feb'23</th>
+                                        <th scope="col">Progress</th>
+                                        <th scope="col">2024</th>
+                                        <th scope="col">2023</th>
+                                        <th scope="col">Progress</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dcTableBody" class="collapse">
+                                    <tr>
+                                        <th scope="row">1</th>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">2</th>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">3</th>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                    </tr>
+                                </tbody>
+                                <thead class="thead-dark">
+                                    <tr class="collapsible" onclick="toggleVisibility('dairyTableBody')">
+                                        <th scope="col">Other Dairy</th>
+                                        <th scope="col">Today</th>
+                                        <th scope="col">Yesterday</th>
+                                        <th scope="col">Progress</th>
+                                        <th scope="col">Feb'24</th>
+                                        <th scope="col">Feb'23</th>
+                                        <th scope="col">Progress</th>
+                                        <th scope="col">2024</th>
+                                        <th scope="col">2023</th>
+                                        <th scope="col">Progress</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dairyTableBody" class="collapse">
+                                    <tr>
+                                        <th scope="row">1</th>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">2</th>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">3</th>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="row" id="graph2">
+                            <div class="card">
+                                <div>
+                                    <h4 class="card-title card-title-dash">Milk Procurement</h4>
+                                    <h5 class="card-subtitle card-subtitle-dash">Lorem Ipsum is simply dummy text of the printing</h5>
+                                </div>
+                                <div class="wrapper mt-4">
+                                    <canvas id="performanceLine2" style="width:100%;max-width:900px"></canvas>
+                                </div>
+                            </div>
+                            <table class="table table-bordered">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th scope="col">Receipt</th>
+                                        <th scope="col" colspan="3">FTD (For the Day)</th>
+                                        <th scope="col" colspan="3">MTD (Month to Date)</th>
+                                        <th scope="col" colspan="3">YTD (Year to Date)</th>
+                                    </tr>
+                                </thead>
+                                <thead class="thead-dark">
+                                    <tr class="collapsible" onclick="toggleVisibility('dcBody')">
+                                        <th scope="col">From DCs</th>
+                                        <th scope="col">Today</th>
+                                        <th scope="col">Yesterday</th>
+                                        <th scope="col">Progress</th>
+                                        <th scope="col">Feb'24</th>
+                                        <th scope="col">Feb'23</th>
+                                        <th scope="col">Progress</th>
+                                        <th scope="col">2024</th>
+                                        <th scope="col">2023</th>
+                                        <th scope="col">Progress</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dcBody" class="collapse">
+                                    <tr>
+                                        <th scope="row">1</th>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">2</th>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">3</th>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                    </tr>
+                                </tbody>
+                                <thead class="thead-dark">
+                                    <tr class="collapsible" onclick="toggleVisibility('dairyBody')">
+                                        <th scope="col">Other Dairy</th>
+                                        <th scope="col">Today</th>
+                                        <th scope="col">Yesterday</th>
+                                        <th scope="col">Progress</th>
+                                        <th scope="col">Feb'24</th>
+                                        <th scope="col">Feb'23</th>
+                                        <th scope="col">Progress</th>
+                                        <th scope="col">2024</th>
+                                        <th scope="col">2023</th>
+                                        <th scope="col">Progress</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dairyBody" class="collapse">
+                                    <tr>
+                                        <th scope="row">1</th>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">2</th>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">3</th>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="row" id="graph3">
+                            <div class="card">
+                                <div>
+                                    <h4 class="card-title card-title-dash">Milk Procurement</h4>
+                                    <h5 class="card-subtitle card-subtitle-dash">Lorem Ipsum is simply dummy text of the printing</h5>
+                                </div>
+                                <div class="wrapper mt-4">
+                                    <canvas id="performanceLine3" style="width:100%;max-width:900px"></canvas>
+                                </div>
+                            </div>
+                            <table class="table table-bordered">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th scope="col">Receipt</th>
+                                        <th scope="col" colspan="3">FTD (For the Day)</th>
+                                        <th scope="col" colspan="3">MTD (Month to Date)</th>
+                                        <th scope="col" colspan="3">YTD (Year to Date)</th>
+                                    </tr>
+                                </thead>
+                                <thead class="thead-dark">
+                                    <tr class="collapsible" onclick="toggleVisibility('bcs')">
+                                        <th scope="col">From DCs</th>
+                                        <th scope="col">Today</th>
+                                        <th scope="col">Yesterday</th>
+                                        <th scope="col">Progress</th>
+                                        <th scope="col">Feb'24</th>
+                                        <th scope="col">Feb'23</th>
+                                        <th scope="col">Progress</th>
+                                        <th scope="col">2024</th>
+                                        <th scope="col">2023</th>
+                                        <th scope="col">Progress</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bcs" class="collapse">
+                                    <tr>
+                                        <th scope="row">1</th>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">2</th>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">3</th>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                    </tr>
+                                </tbody>
+                                <thead class="thead-dark">
+                                    <tr class="collapsible" onclick="toggleVisibility('ccs')">
+                                        <th scope="col">Other Dairy</th>
+                                        <th scope="col">Today</th>
+                                        <th scope="col">Yesterday</th>
+                                        <th scope="col">Progress</th>
+                                        <th scope="col">Feb'24</th>
+                                        <th scope="col">Feb'23</th>
+                                        <th scope="col">Progress</th>
+                                        <th scope="col">2024</th>
+                                        <th scope="col">2023</th>
+                                        <th scope="col">Progress</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ccs" class="collapse">
+                                    <tr>
+                                        <th scope="row">1</th>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">2</th>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">3</th>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="row" id="graph4">
+                            <div class="card">
+                                <div>
+                                    <h4 class="card-title card-title-dash">Milk Procurement</h4>
+                                    <h5 class="card-subtitle card-subtitle-dash">Lorem Ipsum is simply dummy text of the printing</h5>
+                                </div>
+                                <div class="wrapper mt-4">
+                                    <canvas id="performanceLine4" style="width:100%;max-width:900px"></canvas>
+                                </div>
+                            </div>
+                            <table class="table table-bordered">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th scope="col">Receipt</th>
+                                        <th scope="col" colspan="3">FTD (For the Day)</th>
+                                        <th scope="col" colspan="3">MTD (Month to Date)</th>
+                                        <th scope="col" colspan="3">YTD (Year to Date)</th>
+                                    </tr>
+                                </thead>
+                                <thead class="thead-dark">
+                                    <tr class="collapsible" onclick="toggleVisibility('bulkcntr')">
+                                        <th scope="col">From DCs</th>
+                                        <th scope="col">Today</th>
+                                        <th scope="col">Yesterday</th>
+                                        <th scope="col">Progress</th>
+                                        <th scope="col">Feb'24</th>
+                                        <th scope="col">Feb'23</th>
+                                        <th scope="col">Progress</th>
+                                        <th scope="col">2024</th>
+                                        <th scope="col">2023</th>
+                                        <th scope="col">Progress</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bulkcntr" class="collapse">
+                                    <tr>
+                                        <th scope="row">1</th>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">2</th>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">3</th>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                    </tr>
+                                </tbody>
+                                <thead class="thead-dark">
+                                    <tr class="collapsible" onclick="toggleVisibility('chillcntr')">
+                                        <th scope="col">Other Dairy</th>
+                                        <th scope="col">Today</th>
+                                        <th scope="col">Yesterday</th>
+                                        <th scope="col">Progress</th>
+                                        <th scope="col">Feb'24</th>
+                                        <th scope="col">Feb'23</th>
+                                        <th scope="col">Progress</th>
+                                        <th scope="col">2024</th>
+                                        <th scope="col">2023</th>
+                                        <th scope="col">Progress</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="chillcntr" class="collapse">
+                                    <tr>
+                                        <th scope="row">1</th>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">2</th>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">3</th>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="row" id="pie">
+                            <div class="card">
+                                <div>
+                                    <h4 class="card-title card-title-dash">Sales</h4>
+                                    <h5 class="card-subtitle card-subtitle-dash">Lorem Ipsum is simply dummy text of the printing</h5>
+                                </div>
+                                <div class="wrapper mt-4">
+                                    <canvas id="mypie" style="width:100%;max-width:500px; max-height:500px"></canvas>
+                                </div>
+                            </div>
+                            <table class="table table-bordered">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th scope="col">Receipt</th>
+                                        <th scope="col" colspan="3">FTD (For the Day)</th>
+                                        <th scope="col" colspan="3">MTD (Month to Date)</th>
+                                        <th scope="col" colspan="3">YTD (Year to Date)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="collapsible" onclick="toggleVisibility('fromDcs')">
+                                        <th scope="col">From DCs</th>
+                                        <th scope="col">Today</th>
+                                        <th scope="col">Yesterday</th>
+                                        <th scope="col">Progress</th>
+                                        <th scope="col">Feb'24</th>
+                                        <th scope="col">Feb'23</th>
+                                        <th scope="col">Progress</th>
+                                        <th scope="col">2024</th>
+                                        <th scope="col">2023</th>
+                                        <th scope="col">Progress</th>
+                                    </tr>
+                                </tbody>
+                                <tbody id="fromDcs" class="collapse">
+                                    <tr>
+                                        <th scope="row">1</th>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">2</th>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">3</th>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                    </tr>
+                                </tbody>
+                                <tbody>
+                                    <tr class="collapsible" onclick="toggleVisibility('otherDairy')">
+                                        <th scope="col">Other Dairy</th>
+                                        <th scope="col">Today</th>
+                                        <th scope="col">Yesterday</th>
+                                        <th scope="col">Progress</th>
+                                        <th scope="col">Feb'24</th>
+                                        <th scope="col">Feb'23</th>
+                                        <th scope="col">Progress</th>
+                                        <th scope="col">2024</th>
+                                        <th scope="col">2023</th>
+                                        <th scope="col">Progress</th>
+                                    </tr>
+                                </tbody>
+                                <tbody id="otherDairy" class="collapse">
+                                    <tr>
+                                        <th scope="row">1</th>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>mdo</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">2</th>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>fat</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">3</th>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>twitter</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleVisibility(id) {
+        const element = document.getElementById(id);
+        element.classList.toggle('show');
+    }
+    document.addEventListener('DOMContentLoaded', (event) => {
+        const chartData1 = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.chartData));
+        const chartData2 = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.chartData2));
+        const chartData3 = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.chartData3));
+        const chartData4 = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.chartData4));
+
+        function createLineData(chartData, labelsField, dataFields) {
+            const labels = chartData[dataFields[0]].map(item => item.x);
+            const datasets = dataFields.map((field, index) => ({
+                label: chartData[`label${index + 1}`],
+                data: chartData[field].map(item => item.y),
+                tension: 0.4,
+                backgroundColor: `rgba(${index * 60}, ${index * 60}, ${255 - index * 60}, 0.05)`,
+                borderColor: `rgb(${index * 60}, ${index * 60}, ${255 - index * 60})`,
+                borderWidth: 1.5
+            }));
+
+            return {
+                labels: labels,
+                datasets: datasets
+            };
+        }
+
+        const lineData1 = createLineData(chartData1, 'chartData1', ['chartData1', 'chartData2', 'chartData3']);
+        const lineData2 = createLineData(chartData2, 'chartData4', ['chartData4', 'chartData5', 'chartData6']);
+        const lineData3 = createLineData(chartData3, 'chartData7', ['chartData7', 'chartData8', 'chartData9']);
+        const lineData4 = createLineData(chartData4, 'chartData10', ['chartData10', 'chartData11', 'chartData12']);
+
+        const performanceLine1 = new Chart(document.getElementById('performanceLine1').getContext('2d'), {
+            type: 'line',
+            data: lineData1,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true
+                    },
+                    tooltip: {
+                        enabled: true  
+                    }
+                }
+            }
+        });
+
+        const performanceLine2 = new Chart(document.getElementById('performanceLine2').getContext('2d'), {
+            type: 'line',
+            data: lineData2,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true
+                    },
+                    tooltip: {
+                        enabled: true  
+                    }
+                }
+            }
+        });
+               
+
+        const performanceLine3 = new Chart(document.getElementById('performanceLine3').getContext('2d'), {
+            type: 'line',
+            data: lineData3,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true
+                    },
+                    tooltip: {
+                        enabled: true  
+                    }
+                }
+            }
+        });
+
+        const performanceLine4 = new Chart(document.getElementById('performanceLine4').getContext('2d'), {
+            type: 'line',
+            data: lineData4,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true
+                    },
+                    tooltip: {
+                        enabled: true  
+                    }
+                }
+            }
+        });
+
+        const pieData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.pieData));
+
+        const myPieChart = new Chart(document.getElementById('mypie').getContext('2d'), {
+            type: 'pie',
+            data: {
+                labels: pieData.map(item => item.label),
+                datasets: [{
+                    data: pieData.map(item => item.value),
+                    backgroundColor: pieData.map((item, index) => `rgba(${index * 60}, ${255 - index * 60}, ${index * 60}, 0.5)`),
+                    borderColor: pieData.map((item, index) => `rgb(${index * 60}, ${255 - index * 60}, ${index * 60})`),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true
+                    },
+                    tooltip: {
+                        enabled: true  
+                    }
+                }
+            }
+        });
+        window.addEventListener('resize', () => {
+            performanceLine1.resize();
+            performanceLine2.resize();
+            performanceLine3.resize();
+            performanceLine4.resize();
+        });
+    });
+</script>
+
+                    
